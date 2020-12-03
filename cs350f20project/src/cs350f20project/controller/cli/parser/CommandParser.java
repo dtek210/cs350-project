@@ -27,8 +27,9 @@ import cs350f20project.datatype.Latitude;
 import cs350f20project.datatype.Longitude;
 
 public class CommandParser {
+	//THIS IS PROBLEM STAYS NULL
 	private static A_ParserHelper parserHelper ;
-	private static String commandText;
+	private static String commandText = "DO BRAKE train1;";
 	
 	CommandParser(A_ParserHelper parserHelper,String commandText){
 		CommandParser.parserHelper = parserHelper;
@@ -38,9 +39,10 @@ public class CommandParser {
 	public static void main(String[] args) {
 		//MyParserHelper parserHelper = new MyParserHelper(null);	
 		Startup myStartUp = new Startup();
-		myStartUp.go();
+		
 		CommandParser parser = new CommandParser(parserHelper, commandText);
 		parser.parse();
+		myStartUp.go();
 		System.out.println("compiled maybe");
 	}
 
@@ -72,7 +74,7 @@ public class CommandParser {
 		List<String> idPoles = new ArrayList<String>();
 
 		// Rule 22 CommandCreatePowerCatenary      
-		if((items[0] + " " + items[1]+ " "+ items[2]).equals("CREATE POWER CATENARY")){
+		if((items[1]+ " "+ items[2]).equals("POWER CATENARY")){
 			//pole IDs start after 4th element
 			int count = 4; 		
 				    
@@ -85,13 +87,13 @@ public class CommandParser {
 		}
 		
 		// Rule 28 CommandCreateStockCarBox
-		if((items[0] + " " + items[1]+ " "+ items[2]+ " "+ items[4]+ " "+ items[5]).equals("CREATE STOCK CAR AS BOX")){
+		if((items[1]+ " "+ items[2]+ " "+ items[4]+ " "+ items[5]).equals("STOCK CAR AS BOX")){
 			A_Command command = new CommandCreateStockCarBox((String)items[3]);
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
 		
 		// Rule 47 CommandCreateTrackStraight
-		if((items[0] + " " + items[1]+ " "+ items[2]+ " "+ items[4]).equals("CREATE TRACK STRAIGHT REFERENCE")){
+		if((items[1]+ " "+ items[2]+ " "+ items[4]).equals("TRACK STRAIGHT REFERENCE")){
 			
 			CoordinatesDelta start;
 			CoordinatesDelta end;
@@ -118,7 +120,7 @@ public class CommandParser {
 		}
 		
 		
-		if((items[0] + " " + items[1]+ " "+ items[2]+ " "+ items[3]).equals("CREATE TRACK SWITCH TURNOUT")){
+		if((items[1]+ " "+ items[2]+ " "+ items[3]).equals("TRACK SWITCH TURNOUT")){
 			CoordinatesDelta start1 = null;
 			CoordinatesDelta end1 = null;
 			CoordinatesDelta start2 = null;
@@ -160,45 +162,45 @@ public class CommandParser {
 		String [] items = commandTextItem.split("\\s");
 		 
 		// Rule 2 CommandBehavioralBrake parse
-		if((items[0] + " " + items[1]).equals("DO BRAKE")){
+		if((items[1]).equals("BRAKE")){
 			A_Command command = new CommandBehavioralBrake(items[2]);
 			CommandParser.parserHelper.getActionProcessor().schedule(command);		
 		}
 		
 		// Rule 6 CommandBehavioralSelectBridge parse
-		if((items[0] + " " + items[1]+ " "+ items[2]).equals("DO SELECT DRAWBRIDGE")){
+		if((items[1] + " " + items[2]).equals("SELECT DRAWBRIDGE")){
 			A_Command command = new CommandBehavioralSelectBridge(items[3],Boolean.parseBoolean(items[4]));
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
 		
 		// Rule 7 CommandBehavioralSelectRoundhouse parse
-		if((items[0] + " " + items[1]+ " "+ items[2]).equals("DO SELECT ROUNDHOUSE")){
+		if((items[1] + " " + items[2]).equals("SELECT ROUNDHOUSE")){
 			angle = new Angle(Double.parseDouble( items[4]));
 			A_Command command = new CommandBehavioralSelectRoundhouse(items[3],angle,Boolean.parseBoolean(items[5]));
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
 		
 		// Rule 8  CommandBehavioralSelectSwitch parse
-		if((items[0] + " " + items[1]+ " "+ items[2]+ " "+ items[4]).equals("DO SELECT SWITCH PATH")){
+		if((items[1]+ " "+ items[2]+ " "+ items[4]).equals("SELECT SWITCH PATH")){
 			A_Command command = new CommandBehavioralSelectSwitch(items[3],Boolean.parseBoolean(items[5]));
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
 		
 		// Rule 11 CommandBehavioralSetDirection
-		if((items[0] + " " + items[1]+ " "+ items[3]).equals("DO SET DIRECTION")){
+		if((items[1]+ " "+ items[3]).equals("SET DIRECTION")){
 			boolean bool = isBoolean(items[4]);
 			A_Command command = new CommandBehavioralSetDirection((String)items[2],bool);
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
 		
 		// Rule 12 CommandBehavioralSetReference
-		if((items[0] + " " + items[1]+ " "+ items[2]+ " "+ items[3]).equals("DO SET REFERENCE ENGINE")){
+		if((items[1]+ " "+ items[2]+ " "+ items[3]).equals("SET REFERENCE ENGINE")){
 			A_Command command = new CommandBehavioralSetReference((String)items[4]);
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
 		
 		// Rule 15 CommandBehavioralSetSpeed
-		if((items[0] + " " + items[1]+ " "+ items[3]).equals("DO SET SPEED")){
+		if((items[1]+ " "+ items[3]).equals("SET SPEED")){
 			A_Command command = new CommandBehavioralSetSpeed((String)items[2],Double.parseDouble(items[4]));
 			CommandParser.parserHelper.getActionProcessor().schedule(command);
 		}
