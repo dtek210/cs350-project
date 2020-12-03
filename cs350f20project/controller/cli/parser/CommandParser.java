@@ -235,7 +235,7 @@ public class CommandParser {
 	
 	
 	
-	
+/*
 	// Rule 2 CommandBehavioralBrake parse
 	// (string id)
 	public void parseRule2(){
@@ -431,7 +431,7 @@ public class CommandParser {
 				CommandParser.parserHelper.getActionProcessor().schedule(command);
 			}
 		}
-		
+*/
 	private boolean isBoolean(String a) {
 		if(a.equalsIgnoreCase("true")) {
 			return true;
