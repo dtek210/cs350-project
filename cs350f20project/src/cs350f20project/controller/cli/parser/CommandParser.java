@@ -20,12 +20,13 @@ import cs350f20project.controller.command.creational.CommandCreateTrackSwitchTur
 import cs350f20project.datatype.*;
 
 public class CommandParser {
+	
 
 	public String commandText;
-;
+
 	public MyParserHelper parserHelper;
 	
-	CommandParser(MyParserHelper parser_Helper,String command_Text){
+	public CommandParser(MyParserHelper parser_Helper,String command_Text){
 		parserHelper = parser_Helper;
 		commandText = command_Text;
 	}
@@ -103,26 +104,27 @@ public class CommandParser {
 		// Rule 47 CommandCreateTrackStraight
 		if((items[1]+ " "+ items[2]+ " "+ items[4]).equals("TRACK STRAIGHT REFERENCE")){
 			
-			CoordinatesDelta start;
-			CoordinatesDelta end;
-			PointLocator pl = null;
+            CoordinatesWorld world = null;
 			
 			if(commandText.contains("$")) {
-				if( parserHelper.hasReference(items[6])) {
-					CoordinatesWorld world = parserHelper.getReference(items[6]);
-					start = new CoordinatesDelta(Double.parseDouble(items[9]),Double.parseDouble(items[11]));
-					end = new CoordinatesDelta(Double.parseDouble(items[13]),Double.parseDouble(items[15]));
-					pl = new PointLocator(world,start,end);
+				if( parserHelper.hasReference(items[6].substring(1))) {
+					world = parserHelper.getReference(items[6].substring(1));
+					
 				}
 			}else {
-				//sets up point locator
-				Latitude lat = new Latitude(Integer.parseInt(items[5]),Integer.parseInt(items[7]),Double.parseDouble(items[9]));
-				Longitude lng = new Longitude(Integer.parseInt(items[11]),Integer.parseInt(items[13]),Double.parseDouble(items[15]));
-				start = new CoordinatesDelta(Double.parseDouble(items[10]),Double.parseDouble(items[12]));
-				end = new CoordinatesDelta(Double.parseDouble(items[14]),Double.parseDouble(items[16]));
-				CoordinatesWorld world = new CoordinatesWorld(lat,lng);
-				pl = new PointLocator(world,start,end);
+				//sets up point locator 
+				String[] coor = items[5].split("/");
+	            String [] lat = coor[0].split("\\*|'");
+	            String [] lon = coor[1].split("\\*|'|\"");
+	            Latitude worldLat = new Latitude(Integer.parseInt(lat[0]),Integer.parseInt(lat[1]),Double.parseDouble(lat[2]));
+				Longitude worldLon = new Longitude(Integer.parseInt(lon[0]),Integer.parseInt(lon[1]),Double.parseDouble(lon[2]));
+				world = new CoordinatesWorld(worldLat,worldLon);
 			}
+			String[] deltaStart = items[8].split(":");
+			String[] deltaEnd = items[10].split(":");
+			CoordinatesDelta start = new CoordinatesDelta(Double.parseDouble(deltaStart[0]),Double.parseDouble(deltaStart[1]));
+			CoordinatesDelta end = new CoordinatesDelta(Double.parseDouble(deltaEnd[0]),Double.parseDouble(deltaEnd[1]));
+			PointLocator pl = new PointLocator(world,start,end);
 			A_Command command = new CommandCreateTrackStraight((String)items[3], pl);
 			parserHelper.getActionProcessor().schedule(command);
 		}
@@ -137,32 +139,31 @@ public class CommandParser {
 			CoordinatesWorld world = null;
 			
 			if(commandText.contains("$")) {
-				if( parserHelper.hasReference(items[7])) {
-					world = parserHelper.getReference(items[7]);
-					start1 = new CoordinatesDelta(Double.parseDouble(items[11]),Double.parseDouble(items[13]));
-					end1 = new CoordinatesDelta(Double.parseDouble(items[15]),Double.parseDouble(items[17]));
-					start2 = new CoordinatesDelta(Double.parseDouble(items[21]),Double.parseDouble(items[23]));
-					end2 = new CoordinatesDelta(Double.parseDouble(items[25]),Double.parseDouble(items[27]));
-					origin = new CoordinatesDelta(Double.parseDouble(items[30]),Double.parseDouble(items[32]));
+				if( parserHelper.hasReference(items[7].substring(1))) {
+					world = parserHelper.getReference(items[7].substring(1));
 				}
 					
 			}else{
-				
-				Latitude lat = new Latitude(Integer.parseInt(items[6]),Integer.parseInt(items[8]),Double.parseDouble(items[10]));
-				Longitude lng = new Longitude(Integer.parseInt(items[12]),Integer.parseInt(items[14]),Double.parseDouble(items[16]));
-				
-				world = new CoordinatesWorld(lat,lng);
-				start1 = new CoordinatesDelta(Double.parseDouble(items[21]),Double.parseDouble(items[23]));
-				end1 = new CoordinatesDelta(Double.parseDouble(items[25]),Double.parseDouble(items[27]));
-				start2 = new CoordinatesDelta(Double.parseDouble(items[31]),Double.parseDouble(items[33]));
-				end2 = new CoordinatesDelta(Double.parseDouble(items[35]),Double.parseDouble(items[37]));
-				origin = new CoordinatesDelta(Double.parseDouble(items[40]),Double.parseDouble(items[42]));
-					
-			}
+				String[] coor = items[6].split("/");
+	            String [] lat = coor[0].split("\\*|'");
+	            String [] lon = coor[1].split("\\*|'|\"");
+	            Latitude worldLat = new Latitude(Integer.parseInt(lat[0]),Integer.parseInt(lat[1]),Double.parseDouble(lat[2]));
+				Longitude worldLon = new Longitude(Integer.parseInt(lon[0]),Integer.parseInt(lon[1]),Double.parseDouble(lon[2]));
+				world = new CoordinatesWorld(worldLat,worldLon);
+			} 
+				String [] deltaStart = items[10].split(":");
+				String [] deltaEnd = items[12].split(":");
+				String [] curveDeltaStart = items[16].split(":");
+				String [] curveDeltaEnd = items[18].split(":");
+				String [] deltaOrigin = items[21].split(":");
+				start1 = new CoordinatesDelta(Double.parseDouble(deltaStart[0]),Double.parseDouble(deltaStart[1]));
+				end1 = new CoordinatesDelta(Double.parseDouble(deltaEnd[0]),Double.parseDouble(deltaEnd[1]));
+				start2 = new CoordinatesDelta(Double.parseDouble(curveDeltaStart[0]),Double.parseDouble(curveDeltaStart[1]));
+				end2 = new CoordinatesDelta(Double.parseDouble(curveDeltaEnd[0]),Double.parseDouble(curveDeltaEnd[1]));
+				origin = new CoordinatesDelta(Double.parseDouble(deltaOrigin[0]),Double.parseDouble(deltaOrigin[1]));
 				A_Command command = new CommandCreateTrackSwitchTurnout(items[4],world,start1,end1,start2,end2,origin);
 				parserHelper.getActionProcessor().schedule(command);
 		}
-		
 		
 	}
 
@@ -222,5 +223,19 @@ public class CommandParser {
 		
 	}
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
