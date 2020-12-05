@@ -1,0 +1,487 @@
+package cs350f20project.controller.cli.parser;
+
+import cs350f20project.datatype.CoordinatesWorld;
+import cs350f20project.controller.cli.TrackLocator;
+import cs350f20project.controller.command.A_Command;
+import cs350f20project.controller.command.PointLocator;
+import cs350f20project.controller.command.creational.CommandCreatePowerSubstation;
+import cs350f20project.controller.command.creational.CommandCreateTrackBridgeDraw;
+import cs350f20project.controller.command.creational.CommandCreateTrackBridgeFixed;
+import cs350f20project.controller.command.creational.CommandCreateTrackCrossing;
+import cs350f20project.controller.command.creational.CommandCreateTrackLayout;
+import cs350f20project.controller.command.meta.CommandMetaViewDestroy;
+import cs350f20project.controller.command.meta.CommandMetaViewGenerate;
+import cs350f20project.controller.command.structural.CommandStructuralCommit;
+import cs350f20project.controller.command.structural.CommandStructuralCouple;
+import cs350f20project.controller.command.structural.CommandStructuralLocate;
+import cs350f20project.controller.command.structural.CommandStructuralUncouple;
+import cs350f20project.datatype.*;
+import java.util.*;
+
+
+public class CommandParser {
+
+	
+	public void parse(){
+        String[] items = commandText.split("\\s");
+
+
+       ///////////////rule 25
+       //CREATE POWER SUBSTATION id1 REFERENCE ( coordinates_world | ( '$' id2 ) ) DELTA coordinates_delta WITH CATENARIES idn+
+       //CommandCreatePowerSubstation
+       //Creates power substation id1 at coordinates_delta meters from coordinates_world or id2 with catenaries idn.
+
+       if((items[0] + " " + items[1]  + " " + items[2]).equalsIgnoreCase("create power station") && (items[4]).equalsIgnoreCase("reference") && 
+    		   (items[6]).equalsIgnoreCase("delta") && (items[8] + " " + items[9]).equalsIgnoreCase("with catenaries")){
+           
+    	   String id1;
+    	   CoordinatesWorld reference;
+    	   CoordinatesDelta delta;
+    	   List<String> idCatenaries = new ArrayList<>();
+    	   
+    	   //items3 id1   	   
+    	   id1 = items[3];
+    	   
+    	   //items5 ( coordinates_world | ( '$' id2 ) )
+    	   if(items[5].contains("$")) {  
+    		   reference = new A_ParserHelper.getReference(items[5].substring(1));
+    	   }
+    	   
+    	   else {
+    		   String[] coor = items[5].split("/");
+    		   String lat = coor[0];
+    		   String lon = coor[1];
+    		   
+    		   
+    		   int findLatDegree = lat.indexOf("*");
+    		   int findLatMinutes = lat.indexOf("'");//need help with this
+    		   int findLatSeconds = lat.indexOf('"');//need help with this
+    		   int latDegrees = Integer.parseInt(lat.substring(0, findLatDegree));
+    		   int latMinutes = Integer.parseInt(lat.substring(findLatDegree + 1, findLatMinutes));
+    		   double latSeconds = Double.parseDouble(lat.substring(findLatMinutes + 1, findLatSeconds));
+    		   Latitude worldLat = new Latitude(latDegrees, latMinutes, latSeconds);
+    		   
+    		   
+    		   int findLonDegree = lon.indexOf("*");
+    		   int findLonMinutes = lon.indexOf("'");//need help with this
+    		   int findLonSeconds = lon.indexOf('"');//need help with this
+    		   int lonDegrees = Integer.parseInt(lon.substring(0, findLonDegree));;
+    		   int lonMinutes = Integer.parseInt(lon.substring(findLonDegree + 1, findLatMinutes));;
+    		   double lonSeconds = Double.parseDouble(lon.substring(findLonMinutes + 1, findLatSeconds));;
+    		   Longitude worldLon = new Longitude(lonDegrees, lonMinutes, lonSeconds);
+    		   
+    		   reference = new CoordinatesWorld(worldLat, worldLon);
+    		   
+    	   }
+    	   
+    	   //items7 coordinates_delta
+    	       String[] coorDelta = items[7].split(":");
+    	       Double left = Double.parseDouble(coorDelta[0]);
+    	       Double right = Double.parseDouble(coorDelta[1]);
+    	       
+    	       delta = new CoordinatesDelta(left, right);
+    	       
+    	   //items10+ idn+
+    	   for(int i = 10; i < items.length; i++) {
+    		   String temp = items[i];
+    		   idCatenaries.add(temp);
+    	   }
+    	   
+    	   A_Command command = new CommandCreatePowerSubstation(id1, reference, delta, idCatenaries);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule25
+       
+       
+       
+       ///////////////rule 39
+       // CREATE TRACK BRIDGE DRAW id1 REFERENCE (coordinates_world | ('$'id2)) DELTA START coordinates_delta1 END coordinates_delta2 ANGLE angle
+       //CommandCreateTrackBridgeDraw
+       //Creates drawbridge track id1 starting at coordinates_delta1 meters and ending at coordinates_delta2 meters from coordinates_world or id2 with maximum elevation
+       //angle.
+       if((items[0] + " " + items[1]  + " " + items[2] + " " + items[3]).equalsIgnoreCase("create track bridge draw") &&
+    		   items[5].equalsIgnoreCase("reference") && (items[7] + " " + items[8]).equalsIgnoreCase("delta start") && 
+    		   items[10].equalsIgnoreCase("end") && items[12].equalsIgnoreCase("angle")) {
+    	   
+
+    	   CoordinatesWorld reference1;
+    	   
+    	   //items4 id1
+    	   String id1 = items[4];
+    	   
+    	   //items6 (coordinates_world | ('$'id2))
+    	   if(items[6].contains("$")) {  
+    		   reference1 = new A_ParserHelper.getReference(items[6].substring(1));
+    	   }
+    	   
+    	   else {
+    		   String[] coor = items[6].split("/");
+    		   String lat = coor[0];
+    		   String lon = coor[1];
+    		   
+    		   
+    		   int findLatDegree = lat.indexOf("*");
+    		   int findLatMinutes = lat.indexOf("'");//need help with this
+    		   int findLatSeconds = lat.indexOf('"');//need help with this
+    		   int latDegrees = Integer.parseInt(lat.substring(0, findLatDegree));
+    		   int latMinutes = Integer.parseInt(lat.substring(findLatDegree + 1, findLatMinutes));
+    		   double latSeconds = Double.parseDouble(lat.substring(findLatMinutes + 1, findLatSeconds));
+    		   Latitude worldLat = new Latitude(latDegrees, latMinutes, latSeconds);
+    		   
+    		   
+    		   int findLonDegree = lon.indexOf("*");
+    		   int findLonMinutes = lon.indexOf("'");//need help with this
+    		   int findLonSeconds = lon.indexOf('"');//need help with this
+    		   int lonDegrees = Integer.parseInt(lon.substring(0, findLonDegree));;
+    		   int lonMinutes = Integer.parseInt(lon.substring(findLonDegree + 1, findLatMinutes));;
+    		   double lonSeconds = Double.parseDouble(lon.substring(findLonMinutes + 1, findLatSeconds));;
+    		   Longitude worldLon = new Longitude(lonDegrees, lonMinutes, lonSeconds);
+    		   
+    		   reference1 = new CoordinatesWorld(worldLat, worldLon);
+    	   }   
+    	   //items9 coordinates_delta1
+    	   
+    		   String[] coorDelta1 = items[9].split(":");
+    	       Double left1 = Double.parseDouble(coorDelta1[0]);
+    	       Double right1 = Double.parseDouble(coorDelta1[1]);
+    	       
+    	       CoordinatesDelta delta1 = new CoordinatesDelta(left1, right1);
+    	       
+    	   //items11 coordinates_delta2
+    	       String[] coorDelta2 = items[9].split(":");
+    	       Double left2 = Double.parseDouble(coorDelta2[0]);
+    	       Double right2 = Double.parseDouble(coorDelta2[1]);
+    	       
+    	       CoordinatesDelta delta2 = new CoordinatesDelta(left2, right2);
+    	       
+    	   //PointLocator locator
+    	       PointLocator locator = PointLocator(reference1, delta1, delta2);
+    	       
+    	   //items13 angle
+    	       double ang = Double.parseDouble(items[13]);
+    	       Angle angle = Angle(ang);
+    	   
+    	   A_Command command = new CommandCreateTrackBridgeDraw(id1, locator, angle);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 39
+       
+       
+       
+       
+       ///////////////rule 40
+       //CREATE TRACK BRIDGE id1 REFERENCE ( coordinates_world | ( '$' id2 ) ) DELTA START coordinates_delta1 END coordinates_delta2
+       //CommandCreateTrackBridgeFixed
+       //Creates fixed bridge track id1 starting at coordinates_delta1 meters and ending at coordinates_delta2 meters from coordinates_world or id2.
+       if((items[0] + " " + items[1]  + " " + items[2]).equalsIgnoreCase("create track bridge") && items[4].equalsIgnoreCase("reference")
+       			&& (items[6] + " " + items[7]).equalsIgnoreCase("delta start") && items[9].equalsIgnoreCase("end")) {
+       		
+    	   CoordinatesWorld reference1;
+    	   
+       		//item3 id1
+       		String id1 = items[3];
+       		
+       		//items5 reference
+       		if(items[5].contains("$")) {  
+     		   reference1 = new A_ParserHelper.getReference(items[5].substring(1));
+     	   }
+     	   
+     	   else {
+     		   String[] coor = items[5].split("/");
+     		   String lat = coor[0];
+     		   String lon = coor[1];
+     		   
+     		   
+     		   int findLatDegree = lat.indexOf("*");
+     		   int findLatMinutes = lat.indexOf("'");//need help with this
+     		   int findLatSeconds = lat.indexOf('"');//need help with this
+     		   int latDegrees = Integer.parseInt(lat.substring(0, findLatDegree));
+     		   int latMinutes = Integer.parseInt(lat.substring(findLatDegree + 1, findLatMinutes));
+     		   double latSeconds = Double.parseDouble(lat.substring(findLatMinutes + 1, findLatSeconds));
+     		   Latitude worldLat = new Latitude(latDegrees, latMinutes, latSeconds);
+     		   
+     		   
+     		   int findLonDegree = lon.indexOf("*");
+     		   int findLonMinutes = lon.indexOf("'");//need help with this
+     		   int findLonSeconds = lon.indexOf('"');//need help with this
+     		   int lonDegrees = Integer.parseInt(lon.substring(0, findLonDegree));;
+     		   int lonMinutes = Integer.parseInt(lon.substring(findLonDegree + 1, findLatMinutes));;
+     		   double lonSeconds = Double.parseDouble(lon.substring(findLonMinutes + 1, findLatSeconds));;
+     		   Longitude worldLon = new Longitude(lonDegrees, lonMinutes, lonSeconds);
+     		   
+     		   reference1 = new CoordinatesWorld(worldLat, worldLon);
+     	   }	
+       		
+       		//items8 delta1
+       		String[] coorDelta1 = items[8].split(":");
+ 	        Double left1 = Double.parseDouble(coorDelta1[0]);
+ 	        Double right1 = Double.parseDouble(coorDelta1[1]);
+ 	       
+ 	       CoordinatesDelta delta1 = new CoordinatesDelta(left1, right1);	
+       		
+       		//items 10 delta2
+ 	       	String[] coorDelta2 = items[10].split(":");
+ 	       	Double left2 = Double.parseDouble(coorDelta2[0]);
+ 	       	Double right2 = Double.parseDouble(coorDelta2[1]);
+	       
+ 	       	CoordinatesDelta delta2 = new CoordinatesDelta(left2, right2);	
+       		
+       		//PointLocator locator
+       		PointLocator locator = new PointLocator(reference1, delta1, delta2);
+       			
+       		A_Command command = new CommandCreateTrackBridgeFixed(id1, locator);
+            this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 40
+       
+       
+       
+       ///////////////rule 41
+       //CREATE TRACK CROSSING id1 REFERENCE ( coordinates_world | ( '$' id2 ) ) DELTA START coordinates_delta1 END coordinates_delta2
+       //CommandCreateTrackCrossing
+       //Creates grade-crossing track id1 starting at coordinates_delta1 meters and ending at coordinates_delta2 meters from coordinates_world or id2.
+       if((items[0] + " " + items[1]  + " " + items[2]).equalsIgnoreCase("create track crossing") && items[4].equalsIgnoreCase("reference") &&
+    		   (items[6] + " " + items[7]).equalsIgnoreCase("delta start") && items[9].equalsIgnoreCase("end")) {
+       
+    	   CoordinatesWorld reference1;
+    	   //item3 id1
+    	   String id1 = items[3];
+    	   
+    	   //item5 reference
+    	   if(items[5].contains("$")) {  
+     		   reference1 = new A_ParserHelper.getReference(items[5].substring(1));
+     	   }
+     	   
+     	   else {
+     		   String[] coor = items[5].split("/");
+     		   String lat = coor[0];
+     		   String lon = coor[1];
+     		   
+     		   
+     		   int findLatDegree = lat.indexOf("*");
+     		   int findLatMinutes = lat.indexOf("'");//need help with this
+     		   int findLatSeconds = lat.indexOf('"');//need help with this
+     		   int latDegrees = Integer.parseInt(lat.substring(0, findLatDegree));
+     		   int latMinutes = Integer.parseInt(lat.substring(findLatDegree + 1, findLatMinutes));
+     		   double latSeconds = Double.parseDouble(lat.substring(findLatMinutes + 1, findLatSeconds));
+     		   Latitude worldLat = new Latitude(latDegrees, latMinutes, latSeconds);
+     		   
+     		   
+     		   int findLonDegree = lon.indexOf("*");
+     		   int findLonMinutes = lon.indexOf("'");//need help with this
+     		   int findLonSeconds = lon.indexOf('"');//need help with this
+     		   int lonDegrees = Integer.parseInt(lon.substring(0, findLonDegree));;
+     		   int lonMinutes = Integer.parseInt(lon.substring(findLonDegree + 1, findLatMinutes));;
+     		   double lonSeconds = Double.parseDouble(lon.substring(findLonMinutes + 1, findLatSeconds));;
+     		   Longitude worldLon = new Longitude(lonDegrees, lonMinutes, lonSeconds);
+     		   
+     		   reference1 = new CoordinatesWorld(worldLat, worldLon);
+     	   }
+    	   //item8 delta1
+    	   String[] coorDelta1 = items[8].split(":");
+	       Double left1 = Double.parseDouble(coorDelta1[0]);
+	       Double right1 = Double.parseDouble(coorDelta1[1]);
+	       
+	       CoordinatesDelta delta1 = new CoordinatesDelta(left1, right1);
+	       
+    	   //item10 delta2
+	       String[] coorDelta2 = items[10].split(":");
+	       Double left2 = Double.parseDouble(coorDelta2[0]);
+	       Double right2 = Double.parseDouble(coorDelta2[1]);
+	       
+	       CoordinatesDelta delta2 = new CoordinatesDelta(left2, right2);
+	       
+    	   //PointLocator locator
+      	   PointLocator locator = new PointLocator(reference1, delta1, delta2);
+    	   
+    	   
+    	   A_Command command = new CommandCreateTrackCrossing(id1, locator);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 41 
+       
+       
+       
+       ///////////////rule 45
+       //CREATE TRACK LAYOUT id1 WITH TRACKS idn+
+       //CommandCreateTrackLayout
+       //Creates track layout id1 with tracks idn.
+       if((items[0] + " " + items[1] + " " + items[2]).equalsIgnoreCase("create track layout") && (items[4] + " " + items[5]).equalsIgnoreCase("with tracks")) {
+    	   
+    	   List<String> trackIds = new ArrayList<>();
+    	   
+    	   //item3 id1
+    	   String id1 = items[3];
+    	   
+    	   //item6+ trackIds
+    	   for(int i = 6; i < items.length; i++) {
+    		   String temp = items[i];
+    		   trackIds.add(temp);
+    	   }
+    	   
+    	   A_Command command = new CommandCreateTrackLayout(id1, trackIds);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 45
+       
+       
+       
+       ///////////////rule 55
+       //CLOSE VIEW id
+       //CommandMetaViewDestroy
+       //Closes view id.
+       if((items[0] + " " + items[1]).equalsIgnoreCase("close view")){
+    	   
+    	   String id = items[2];
+    	   A_Command command = new CommandMetaViewDestroy(id);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 55
+       
+       
+       
+       ///////////////rule 56
+       //OPEN VIEW id1 ORIGIN (coordinates_world|('$'id2)) WORLD WIDTH integer1 SCREEN WIDTH integer2 HEIGHT integer3
+       //CommandMetaViewGenerate
+       //Creates view id1 at origin coordinates_world or id2 where the world is integer1 meters wide and the screen is integer2 pixels wide and integer3 high.
+       if((items[0] + " " + items[1]).equalsIgnoreCase("open view") && items[3].equalsIgnoreCase("origin") &&
+    		   (items[5] + " " + items[6]).equalsIgnoreCase("world width") && (items[8] + " " + items[9]).equalsIgnoreCase("screen width") &&
+    		   items[11].equalsIgnoreCase("height")) {
+    	   
+    	   CoordinatesWorld origin;
+    	   
+    	   //item2
+    	   String id1 = items[2];
+    	   
+    	   //item4
+    	   if(items[4].contains("$")) {  
+    		   origin = new A_ParserHelper.getReference(items[4].substring(1));
+    	   }
+    	   
+    	   else {
+    		   String[] coor = items[4].split("/");
+    		   String lat = coor[0];
+    		   String lon = coor[1];
+    		   
+    		   
+    		   int findLatDegree = lat.indexOf("*");
+    		   int findLatMinutes = lat.indexOf("'");//need help with this
+    		   int findLatSeconds = lat.indexOf('"');//need help with this
+    		   int latDegrees = Integer.parseInt(lat.substring(0, findLatDegree));
+    		   int latMinutes = Integer.parseInt(lat.substring(findLatDegree + 1, findLatMinutes));
+    		   double latSeconds = Double.parseDouble(lat.substring(findLatMinutes + 1, findLatSeconds));
+    		   Latitude worldLat = new Latitude(latDegrees, latMinutes, latSeconds);
+    		   
+    		   
+    		   int findLonDegree = lon.indexOf("*");
+    		   int findLonMinutes = lon.indexOf("'");//need help with this
+    		   int findLonSeconds = lon.indexOf('"');//need help with this
+    		   int lonDegrees = Integer.parseInt(lon.substring(0, findLonDegree));;
+    		   int lonMinutes = Integer.parseInt(lon.substring(findLonDegree + 1, findLatMinutes));;
+    		   double lonSeconds = Double.parseDouble(lon.substring(findLonMinutes + 1, findLatSeconds));;
+    		   Longitude worldLon = new Longitude(lonDegrees, lonMinutes, lonSeconds);
+    		   
+    		   origin = new CoordinatesWorld(worldLat, worldLon);   
+    	   }
+    	   
+    	   //item7
+    	   int worldWidth = Integer.parseInt(items[7]);
+    	   
+    	   //item10
+    	   int screenWidth = Integer.parseInt(items[10]);
+    	   
+    	   //item12
+    	   int height = Integer.parseInt(items[12]);
+    	   
+    	   //CoordinatesScreen screenSize
+    	   CoordinatesScreen screenSize = CoordinatesScreen(screenWidth, height);
+    	   
+    	   A_Command command = new CommandMetaViewGenerate(id1, origin, worldWidth, screenSize);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end 56
+       
+       
+       
+       ///////////////rule 60
+       //COMMIT
+       //CommandStructuralCommit
+       //Commits creational and structural configurations and prevents any further changes.
+       if(items[0].equalsIgnoreCase("commit")) {
+    	   A_Command command = new CommandStructuralCommit();
+           this.parserHelper.getActionProcessor().schedule(command); 
+       }//end rule 60
+	
+       
+       
+       ///////////////rule 61
+       //COUPLE STOCK id1 AND id2
+       //CommandStructuralCouple
+       //Couples stock id1 to id2.
+       if((items[0] + " " + items[1]).equalsIgnoreCase("couple stock") && items[3].equalsIgnoreCase("and")) {
+    	   
+    	   String id1 = items[2];
+    	   String id2 = items[4];
+    	   
+    	   A_Command command = new CommandStructuralCouple(id1, id2);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 61
+       
+       
+       
+       ///////////////rule 62
+       //LOCATE STOCK id1 ON TRACK id2 DISTANCE number FROM ( START | END )
+       //CommandStructuralLocate
+       //Locates stock id1 on track id2 at number meters from the start or end of the track.
+       if((items[0] + " " + items[1]).equalsIgnoreCase("locate stock") && (items[3] + " " + items[4]).equalsIgnoreCase("on track")
+    		   && items[6].equalsIgnoreCase("distance") && items[8].equalsIgnoreCase("from")) {
+    	   
+    	   //items2
+    	   String id1 = items[2];
+    	   
+    	   //items5
+    	   String id2 = items[5];
+    	   
+    	   //items7
+    	   Double distance = Double.parseDouble(items[7]);
+ 
+    	   //items9
+    	   boolean startOrEnd;
+    	   if(items[9].equalsIgnoreCase("start")) {
+    		   startOrEnd = true;
+    	   }
+    	   else {
+    		   startOrEnd = false;
+    	   }
+    	   
+    	   TrackLocator locator = new TrackLocator(id2, distance, startOrEnd);
+    	   A_Command command = new CommandStructuralLocate(id1, locator);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 62
+       
+       
+       
+       ///////////////rule 65
+       //UNCOUPLE STOCK id1 AND id2
+       //CommandStructuralUncouple
+       //Uncouples stock id1 from id2.
+       if((items[0] + " " + items[1]).equalsIgnoreCase("uncouple stock") && items[3].equalsIgnoreCase("and")) {
+    	   String id1 = items[2];
+    	   String id2 = items[4];
+    	   A_Command command = new CommandStructuralUncouple(id1, id2);
+           this.parserHelper.getActionProcessor().schedule(command);
+       }//end rule 65
+       
+       
+       
+       ///////////////rule 66
+       //USE id AS REFERENCE coordinates_world
+       //See MyParserHelper
+       //Sets id as a short-form substitution for coordinates_world in any of the commands with a $ field.
+       
+       
+       
+       
+       ///////////////rule 67
+       //Rule#2throughRule#65
+	
+       
+       
+	}//end parse
+	
+	
+	
+}//end commandParser
